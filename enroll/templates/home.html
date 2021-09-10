@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="{% static 'enroll/css/bootstrap.css' %}" rel="stylesheet">
+    <title>Django Ajax CRUD</title>
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center alert alert-danger"> Django Ajax CRUD </h2>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <h4 class="text-center alert alert-info">Add/Update Student</h4>
+            <form action="" method="post">
+                {% csrf_token %}
+                {{form.as_p}}
+                <input class="btn btn-success" id="btnsave" type="button" value="save">
+            </form>
+        </div>
+        <div class="col-sm-7 offset-1">
+            <h4 class="text-center alert alert-info">Student information</h4>
+            {% if stu %}
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Roll No.</th>
+                    <th scope="col">Contact No.</th>
+                    <th scope="col">Class</th>
+                    <th scope="col">Action</th>
+                </tr>
+                </thead>
+                <tbody id="tbody">
+                {% for item in stu %}
+                <tr>
+                    <td>{{item.id}}</td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.roll}}</td>
+                    <td>{{item.mobile}}</td>
+                    <td>{{item.program}}</td>
+                    <td>
+                        <input class="btn btn-warning btn-sm" data-sid="{{item.id}}" type="button" value="Edit">
+                        <input class="btn btn-danger btn-sm" data-sid="{{item.id}}" type="button" value="Delete">
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <h4 class="text-center alert alert-warning">No Record</h4>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script src="{% static 'enroll/js/jquery.js' %}"></script>
+<script src="{% static 'enroll/js/popper.js' %}"></script>
+<script src="{% static 'enroll/js/bootstrap.js' %}"></script>
+<script>
+     $("#btnsave").click(function(){
+<!--    console.log("Save Button Clicked");-->
+    output = "";
+    let nam = $("#nameid").val();
+    let rol = $("#rollid").val();
+    let mob = $("#mobileid").val();
+    let pro = $("#programid").val();
+    let csr = $("input[name=csrfmiddlewaretoken]").val();
+    if (nam == ""){
+    console.log("Please Enter Name");
+    }else if (rol == ""){
+    console.log("Please Enter roll no");
+    }else if (mob == ""){
+    console.log("Please Enter mobile number");
+    }else if(pro == ""){
+    console.log("Please Enter program");
+    } else {
+        mydata = {name:nam, roll:rol, mobile:mob, program:pro, csrfmiddlewaretoken : csr};
+        $.ajax({
+            url: "{% url 'save' %}",
+            method: "POST",
+            data: mydata,
+            dataType: "json",
+            success: function (data){
+                x= data.student_data;
+                if (data.status == "Save"){
+                    console.log("Form Submitted Successfully");
+                    for (i=0; i<x.length; i++){
+                    output += "<tr><td>" + x[i].id + "</td><td>"  + x[i].name + "</td><td>" + x[i].roll +
+                    "</td><td>" + x[i].mobile + "</td><td>" + x[i].program</td> <input type='button'
+                    class='btn btn-warning btn-sm' value='Edit' data-sid="+ x[i].id + "/>"<input type='button'
+                    class='btn btn-danger btn-sm' value='Delete' data-sid="+ x[i].id + "/>"
+                    }
+                    $("#tbody").html(output);
+                    $("form")[0].reset();
+                }
+                if (data.status == 0){
+                    console.log("Unable to save Form");
+                }
+            },
+        });
+    }
+});
+
+</script>
+</body>
+</html>
